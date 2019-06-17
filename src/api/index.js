@@ -12,7 +12,12 @@ const api = {
   // 获取加班详情数据
   overtimeDetail: (data) => request.get('api/apply/overtime', data),
   // 获取休假详情数据
-  vacationDetail: (data) => request.get('api/apply/vacation', data)
-
+  vacationDetail: (data) => request.get('api/apply/vacation', data),
+  // 发送附件
+  submitFile: (filedata) => request.post('/api/upload', filedata),
+  // 提交加班
+  submitovertime: (data) => request.post('/api/apply/overtime', data),
+  //
+  submitvacation: (data) => request.post('/api/apply/vacation', data)
 }
 export default api

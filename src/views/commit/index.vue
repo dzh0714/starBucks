@@ -1,7 +1,7 @@
 <template>
   <div class="wrap">
     <div class="top">
-      <Head :title="titText"></Head>
+      <Head :title="titletext+'申请表'"></Head>
       <div class="topCon">
         <div class="imgwrap">
           <img src="@/images/loading.gif" class="person-img">
@@ -30,9 +30,9 @@
           <li>
             <span class="gray">加班类型</span>
             <span>
-              <select>
+              <select v-model="usertype">
                 <option value="-1">默认</option>
-                <option v-for="val  in this[type+'Type']" :value="val.id" :key="val.id"></option>
+                <option v-for="val  in this[type+'Type']" :value="val.id" :key="val.id">{{val.title}}</option>
               </select>
             </span>
           </li>
@@ -53,28 +53,32 @@
       <div class="s-middle">
         <h2>加班事由</h2>
         <p class="s-middle-con">
-          <textarea name id cols="30" rows="10"></textarea>
+          <textarea name id cols="35" rows="10" placeholder="请填写加班事由" class="textarea" v-model="describe"></textarea>
         </p>
       </div>
       <div class="s-bottom">
         <h2 class="s-bottom-h2">
-          <span class="addfile">+</span><input type="file">
+          <span class="addfile">+</span>
+          <input type="file" @change='submitFile' multiple class="file">
         </h2>
         <ul>
-          <li>
-            <img src="@/images/loading.gif" alt>
+          <li v-for="(val,i) in imgs" :key="i">
+            <img :src="'http://localhost:3000'+val" alt>
+            <span @click="imgs.splice(i,1)">x</span>
           </li>
         </ul>
       </div>
     </section>
     <div class="bottom">
       <span class="cancel" @click="$router.back()">取消</span>
-      <span class="submit">提交</span>
+      <span class="submit" @click='submitTask'>提交</span>
     </div>
   </div>
 </template>
 <script>
 import { mapActions, mapState } from "vuex";
+import api from '@/api'
+import alertMessage from '@/components/alertMessage'
 export default {
   props: {
     type: String,
@@ -86,6 +90,13 @@ export default {
       starttime:'',
       endtime:'',
       num:'',
+      describe:'',
+      usertype:-1,
+      guid:{
+        type:['png','gif','svg','jpg','jpeg'],
+        size:3
+      },
+      imgs:[],
       overtimeType: [
         {
           id: 1,
@@ -100,7 +111,7 @@ export default {
           title: "工作日"
         }
       ],
-      vacationtype: [
+      vacationType: [
         {
           id: 1,
           title: "年假"
@@ -112,6 +123,7 @@ export default {
       ]
     };
   },
+  components:{alertMessage},
   computed: {
     ...mapState("user", ["userinfo"]),
     titletext() {
@@ -129,11 +141,50 @@ export default {
       let endtime=new Date(this.endtime)*1
       let num=endtime-starttime;
       if(num<0){
-
+        alert('时间选择错误')
       }else{
         this.num=num
       }
+    },
+    submitFile(e){
+      let userfile=e.target.files[0];
+      let {type,size}=userfile
+      let filetype=type.match(/\/(\w+)$/i)[1];
+      let error='';
+      if(!this.guid.type.includes(filetype)){
+        error=`请上传正确的图片类型${this.guid.type.join()}类型的文件`
+      }
+      if(this.guid.size*1024*1024<size){
+        error=`请上传小于${this.guid.size}MB大小的文件`
+      } 
+      if(error){
+        alert(error);
+        return
+      }
+      const formdata=new FormData();
+      formdata.append('file',userfile);
+      api.submitFile(formdata).then(res=>{
+        this.imgs.push(res.url)
+      })
+    },
+    submitTask(){
+      let options={
+        annex:this.imgs,
+        describe:this.describe,
+        starttime:this.starttime,
+        endtime:this.endtime,
+        type:this.usertype
+      }
+      api['submit'+this.type](options).then(res=>{
+          let {msg}=res;
+          if(msg==='提交成功'){
+            this.$router.back()
+          }else{
+            
+          }
+      })
     }
+
   }
 };
 </script>
@@ -292,4 +343,11 @@ li {
   color: white;
   text-align: center;
 }
+
+.textarea{
+  font-size: pxTorem(16px)
+}
+// .file{
+//   opacity: 0;
+// }
 </style>
