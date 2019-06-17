@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # vacation
 
 > A Vue.js project
@@ -19,3 +20,6 @@ npm run build --report
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+=======
+# starBucks
+>>>>>>> 82ef65f7cd508f65420cde547cf93406184f3509
